@@ -1,0 +1,20 @@
+extends Node # links a node to a node on a different layer
+
+var button: Button = null
+var layers: Vector2i = Vector2()
+var nodes: Array = []
+
+#region Init/Ready/Process/Close
+# Called when the node enters the scene tree for the first time.
+func _ready() -> void:
+	self.button = Button.new()
+
+# Called every frame. 'delta' is the elapsed time since the previous frame.
+func _process(delta: float) -> void:
+	pass
+#endregion
+
+#region Load/Save Data
+func load_from_json(data: Dictionary) -> void:
+	pass
+#endregion
