@@ -1,4 +1,6 @@
-extends Node # links a node to a node on a different layer
+class_name TemporalNode extends Node # links a node to a node on a different layer
+# TODO: implement button
+# TODO: implement signal(?) to main
 
 var button: Button = null
 var layers: Vector2i = Vector2()

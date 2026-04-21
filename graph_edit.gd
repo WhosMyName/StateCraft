@@ -1,5 +1,6 @@
 class_name CustomGraphEdit extends GraphEdit
 # TODO: fix re-size scaling
+# TODO: rename to layer
 
 signal zoom_changed(zoom: float)
 var _old_zoom: float = 0
@@ -81,9 +82,9 @@ func load_from_json(data: Dictionary) -> void:
 	# TODO: load button defaults
 	pass
 
-func save() -> void:
+func save() -> JSON:
 	# TODO: define this
-	pass
+	return JSON.new()
 
 #endregion
 

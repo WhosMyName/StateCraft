@@ -1,4 +1,6 @@
 class_name TopMenu extends Node2D
+# TODO: implement layer display (disabled button?) 
+# TODO: implement layer switching buttons 
 
 var elements: Array[Node] = []
 var zoom_label: Label = null

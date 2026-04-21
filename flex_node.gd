@@ -1,4 +1,7 @@
 class_name FlexNode extends GraphNode
+# TODO: make every element it's own class
+# TODO: make textedit the whole ting
+# TODO: handle closing too i guess
 
 var add_button_container: VBoxContainer = null
 var add_elem_button: MenuButton = null
@@ -54,7 +57,7 @@ func load_from_json(data: Dictionary) -> void:
 #endregion
 
 #region (File-)Editor Windows
-func open_edit_window(editor, content, size: Vector2) -> void:
+func open_edit_window(editor, content, content_size: Vector2) -> void:
 	if editor == FileDialog:
 		var window: FileDialog = editor.new()
 		window.access = FileDialog.ACCESS_FILESYSTEM
@@ -65,16 +68,16 @@ func open_edit_window(editor, content, size: Vector2) -> void:
 		window.file_selected.connect(self.close_file_access_window.bind(content))
 		self.get_parent().add_child(window)
 		window.popup_centered()
-		window.size = size
+		window.size = content_size
 		window.position = self.get_parent_area_size() / 2
 	else:
 		var window: Window = Window.new()
-		editor.size = size
+		editor.size = content_size
 		editor.text = content.text
 		window.close_requested.connect(self.close_edit_text_window.bind(window, editor, content))
 		window.add_child(editor)
 		self.get_parent().add_child(window)
-		window.size = size
+		window.size = content_size
 		window.position = self.get_parent_area_size() / 2
 		window.size_changed.connect(func(): editor.size = window.size)
 	
@@ -96,15 +99,15 @@ func close_file_access_window(path: String, content) -> void:
 #endregion
 
 #region Node Element Handling
-func make_generic_box(elem_type, editor_type, size:  Vector2) -> void:
+func make_generic_box(elem_type, editor_type, content_size:  Vector2) -> void:
 	var vbox = VBoxContainer.new()
 	var content = elem_type.new()
 	var edit_button = Button.new()
 	var editor = null
 	if content is Control:
 		content.set_stretch_ratio(9)
-		content.size = size
-		content.custom_minimum_size = size
+		content.size = content_size
+		content.custom_minimum_size = content_size
 	if content is RichTextLabel: # handling text fields
 		editor = editor_type.new()
 		editor.gutters_draw_line_numbers = true

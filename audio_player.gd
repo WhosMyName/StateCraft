@@ -89,7 +89,6 @@ func _play_pause_audio() -> void:
 			self.player.play(self.audio_pos)
 
 func _seek(value_changed) -> void:
-	var playing = self.player.playing
 	if value_changed:
 		self.audio_pos = self.seeker.get_as_ratio() * self.track_len
 		self.player.seek(self.audio_pos)

@@ -7,6 +7,27 @@ var top_menu: TopMenu = null
 var layers: Array[CustomGraphEdit] = []
 var hbox_size: Vector2 = Vector2()
 
+#region Load/Save Data
+# https://docs.godotengine.org/en/stable/classes/class_json.html
+# handle file path -> only filename
+# .csm [compressed/crafted state machine] (.ccsm) | .cstate [c -> crafted] | .comst [compressed state] | .crast [crrafted state]
+func save() -> void:
+	var writer = ZIPPacker.new()
+	var err = writer.open("user://archive.zip")
+	if err != OK:
+		print(err)
+		return
+	for layer in self.layers:
+		var data: JSON = layer.save()
+		writer.start_file("hello.txt")
+		writer.write_file("Hello World".to_utf8_buffer())
+		writer.close_file()
+
+	writer.close()
+	for layer in self.layers:
+		pass
+#endregion
+
 #region Init/Ready/Process/Close
 func _init() -> void:
 	pass
