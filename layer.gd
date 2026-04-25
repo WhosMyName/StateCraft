@@ -1,14 +1,14 @@
-class_name CustomGraphEdit extends GraphEdit
+class_name Layer extends GraphEdit
 # TODO: fix re-size scaling
-# TODO: rename to layer
+# TODO: disconnect signals on switch
 
 signal zoom_changed(zoom: float)
 var _old_zoom: float = 0
 
-@export var is_active = true
-@export var _id: int = 0
-@export var bgColor = Color(0, 0.5, 0, 0.3)
-@export var disable_zoom_label = false
+var is_active = true
+var _id: int = 0
+var bgColor = Color(0, 0.5, 0, 0.3)
+var disable_zoom_label = false
 var graph_nodes_list: Array[FlexNode] = []
 var bgStyleBox = StyleBoxFlat.new()
 
@@ -27,16 +27,13 @@ func _ready() -> void:
 	self.connection_request.connect(self._on_connection_request)
 	self.disconnection_request.connect(self._on_disconnection_request)
 	self.delete_nodes_request.connect(self._on_delete_nodes_request)
-	 # TODO: maybe implement this
+	# TODO: maybe implement this
 	#self.copy_nodes_request
 	#self.paste_nodes_request
 	#self.cut_nodes_request
 	#self.duplicate_nodes_request
 	#self.duplicate_nodes_request
-	self._setBGColor()
-	
 	self.get_menu_hbox().pivot_offset = Vector2(0, 0)
-	# get_window().size_changed.connect(self._on_window_resized)
 	
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(_delta: float) -> void:
@@ -92,21 +89,35 @@ func save() -> JSON:
 func setup_ui(menu:TopMenu) -> void:
 	# can't override that damned self.get_menu_hbox() *grrrr*
 	# connecc the signals
-	self.zoom_changed.connect(menu._update_zoom_label)
+	if not self.zoom_changed.is_connected(menu._update_zoom_label):
+		self.zoom_changed.connect(menu._update_zoom_label)
 	self.zoom_changed.emit(self.zoom)
 	menu.get_minimap_button().pressed.connect(func(): self.minimap_enabled = !self.minimap_enabled)
-	menu.get_rearrange_button_button().pressed.connect(self.arrange_nodes)
+	if not menu.get_rearrange_button_button().pressed.is_connected(self.arrange_nodes):
+		menu.get_rearrange_button_button().pressed.connect(self.arrange_nodes)
 	# menu "refresh"
-	for child in self.get_menu_hbox().get_children():
-		self.get_menu_hbox().remove_child.call_deferred(child)
+	var menu_box = self.get_menu_hbox()
+	for child in menu_box.get_children():
+		menu_box.remove_child(child)
 	for node in menu.get_elements():
 		if node.get_parent():
-			node.reparent(self.get_menu_hbox())
+			node.reparent(menu_box)
 		else:
-			self.get_menu_hbox().add_child.call_deferred(node)
+			menu_box.add_child(node)
+	menu_box.notification(NOTIFICATION_CHILD_ORDER_CHANGED)
+	
+	# TODO: fix menu_box and PanelContainer resizing 
+	menu_box.visible = false
+	menu_box.custom_minimum_size = menu_box.size + Vector2(0, 0)
+	menu_box.reset_size()
+	menu_box.get_parent().custom_minimum_size = menu_box.size #+ Vector2(2, 2)
+	menu_box.get_parent().reset_size()
+	menu_box.visible = true
+	
 	self.show_zoom_label = true
 	self.minimap_enabled = false
 #endregion
+
 
 #region Window Handling
 func _on_window_resized() -> void:

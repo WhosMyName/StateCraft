@@ -1,6 +1,4 @@
 class_name TopMenu extends Node2D
-# TODO: implement layer display (disabled button?) 
-# TODO: implement layer switching buttons 
 
 var elements: Array[Node] = []
 var zoom_label: Label = null
@@ -8,6 +6,9 @@ var rearrange_button: Button = null
 var minimap_button: Button = null
 var add_layer_button: Button = null
 var add_node_button: Button = null
+var layer_up_button: Button = null
+var layer_down_button: Button = null
+var layer_label: Label = null
 
 #region Init/Ready/Process/Close
 # Called when the node enters the scene tree for the first time.
@@ -15,29 +16,47 @@ func _init() -> void:
 	self.zoom_label = Label.new()
 	self.zoom_label.text = "init"
 	self.zoom_label.tooltip_text = "This displays the zoom level"
-	self.elements.append(zoom_label)
-	
+
 	self.rearrange_button = Button.new()
 	self.rearrange_button.icon = preload("res://icons/Godot/GridLayout.svg")
 	self.rearrange_button.tooltip_text = "Rearrange Nodes"
-	self.elements.append(rearrange_button)
-	
+
 	self.minimap_button = Button.new()
 	self.minimap_button.icon = preload("res://icons/Godot/GridMinimap.svg")
 	self.minimap_button.tooltip_text = "Show/hide minimap"
-	self.elements.append(minimap_button)
-	
+
 	self.add_layer_button = Button.new()
 	self.add_layer_button.icon = preload("res://icons/add_layer.svg")
 	self.add_layer_button.tooltip_text = "Add Layer (of complexity ;)"
-	self.elements.append(add_layer_button)
-	
+
 	self.add_node_button = Button.new()
 	self.add_node_button.icon = preload("res://icons/add_node.svg")
 	self.add_node_button.tooltip_text = "Add Node"
+
+	self.layer_up_button = Button.new()
+	self.layer_up_button.tooltip_text = "Go 1 Layer up"
+	self.layer_up_button.icon = preload("res://icons/layer_up.svg")
+
+	self.layer_label = Label.new()
+	self.layer_label.text = "0"
+
+	self.layer_down_button = Button.new()
+	self.layer_down_button.tooltip_text = "Go 1 Layer down"
+	self.layer_down_button.icon = preload("res://icons/layer_down.svg")
+
+	# Element Order: Mini and Map
+	self.elements.append(zoom_label)
+	self.elements.append(minimap_button)
+	self.elements.append(VSeparator.new())
+	# Element Order: Layers
+	self.elements.append(add_layer_button)
+	self.elements.append(layer_up_button)
+	self.elements.append(layer_label)
+	self.elements.append(layer_down_button)
+	self.elements.append(VSeparator.new())
+	# Element Order: Nodes
+	self.elements.append(rearrange_button)
 	self.elements.append(add_node_button)
-	#for node in self.elements:
-		#self.add_child(node)
 
 func _ready() -> void:
 	pass
@@ -62,6 +81,15 @@ func get_minimap_button() -> Button:
 
 func get_rearrange_button_button() -> Button:
 	return self.rearrange_button
+
+func get_layer_up_button() -> Button:
+	return self.layer_up_button
+
+func get_layer_down_button() -> Button:
+	return self.layer_down_button
+
+func set_layer_label_text(text: String) -> void:
+	self.layer_label.text = text
 
 func get_elements() -> Array[Node]:
 	return self.elements

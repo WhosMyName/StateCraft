@@ -1,10 +1,10 @@
 class_name MainWindow extends Node2D
 # TODO: add handling switching layers
 
-var activeGraphEdit: CustomGraphEdit = null
-var curr_visibility_layer_slots = 10 # only needed if previous layer is interactable
+var activeGraphLayer: Layer = null
+var last_layer_num = 1 # only needed if previous layer is interactable
 var top_menu: TopMenu = null
-var layers: Array[CustomGraphEdit] = []
+var layers: Array[Layer] = []
 var hbox_size: Vector2 = Vector2()
 
 #region Load/Save Data
@@ -36,11 +36,14 @@ func _ready() -> void:
 	get_window().close_requested.connect(self._on_close)
 	self.top_menu = preload("res://top_menu.gd").new()
 	self.spawnLayer()
-	self.top_menu.get_add_layer_button().pressed.connect(spawnLayer)
-	self.top_menu.get_add_node_button().pressed.connect(spawnNode)
+	self.top_menu.get_add_layer_button().pressed.connect(self.spawnLayer)
+	self.top_menu.get_add_node_button().pressed.connect(self.spawnNode)
+	self.top_menu.get_layer_up_button().pressed.connect(self.switch_layer_up)
+	self.top_menu.get_layer_down_button().pressed.connect(self.switch_layer_down)
 	
 func _on_close() -> void:
 	# TODO: save layer data
+	print("Klose requested")
 	for layer in self.layers:
 		layer.close()
 		self.remove_child(layer)
@@ -49,31 +52,46 @@ func _on_close() -> void:
 
 #region Layer/Node Handling
 func spawnLayer() -> void:
-	var size = get_window().size
-	var pos = Vector2(0, 0)
-	if activeGraphEdit:
-		self.activeGraphEdit.set_active(false)
-		#if self.curr_visibility_layer_slots < 3:
-			#activeGraphEdit.set_visibility_layer_bit(self.curr_visibility_layer_slots, true)
-			#self.curr_visibility_layer_slots -= 1
-		#else:
-			## TODO: emit warning 
-			#pass
-		self.activeGraphEdit.visible = false
-		size = activeGraphEdit.size
-		pos = activeGraphEdit.position
-		self.activeGraphEdit.save()
-		self.activeGraphEdit.close()
-	self.activeGraphEdit = preload("res://graph_edit.gd").new()
-	self.add_child(activeGraphEdit)
-	self.activeGraphEdit.set_active(true)
-	self.activeGraphEdit.setBGColor(Color(randf(), randf(), randf(), 0))
-	self.activeGraphEdit.set_size(size)
-	self.activeGraphEdit.set_position(pos)
-	self.activeGraphEdit.visible = true
-	self.activeGraphEdit.setup_ui(self.top_menu)
-	self.layers.append(self.activeGraphEdit)
+	var layer = preload("res://layer.gd").new()
+	layer.setBGColor(Color(randf(), randf(), randf(), 0.3))
+	self.switch_layer(layer)
+
+func switch_layer(layer: Layer) -> void:
+	if self.activeGraphLayer:
+		self.activeGraphLayer.set_active(false)
+		self.activeGraphLayer.set_visibility_layer(11 - self.activeGraphLayer.get_id())
+		self.activeGraphLayer.visible = false
+		self.activeGraphLayer.save()
+	self.activeGraphLayer = layer
+	self.activeGraphLayer.visible = true
+	self.activeGraphLayer.set_active(true)
+	self.activeGraphLayer.setup_ui(self.top_menu)
+	if self.activeGraphLayer.get_id() == 0:
+		self.activeGraphLayer.set_id(self.last_layer_num)
+		self.last_layer_num += 1
+		if self.last_layer_num > 10:
+			self.top_menu.add_layer_button.disabled = true
+	if self.activeGraphLayer not in self.layers:
+		self.layers.append(self.activeGraphLayer)
+	if self.activeGraphLayer not in self.get_children():
+		self.add_child(self.activeGraphLayer)
+	self.activeGraphLayer.set_size(get_window().size)
+	self.activeGraphLayer.set_position(Vector2(0, 0))
+	self.top_menu.set_layer_label_text(str(self.activeGraphLayer.get_id()))
+	#self.queue_redraw()
+
+func switch_layer_up() -> void:
+	var curr_layer_num = self.activeGraphLayer.get_id()
+	for layer in self.layers:
+		if layer.get_id() == curr_layer_num + 1:
+			self.switch_layer(layer)
+
+func switch_layer_down() -> void:
+	var curr_layer_num = self.activeGraphLayer.get_id()
+	for layer in self.layers:
+		if layer.get_id() == curr_layer_num - 1:
+			self.switch_layer(layer)
 
 func spawnNode() -> void:
-	self.activeGraphEdit.add_node()
+	self.activeGraphLayer.add_node()
 #endregion
