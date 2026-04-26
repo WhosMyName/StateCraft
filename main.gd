@@ -57,15 +57,18 @@ func spawnLayer() -> void:
 	self.switch_layer(layer)
 
 func switch_layer(layer: Layer) -> void:
+	var is_switch: bool = false
 	if self.activeGraphLayer:
 		self.activeGraphLayer.set_active(false)
 		self.activeGraphLayer.set_visibility_layer(11 - self.activeGraphLayer.get_id())
 		self.activeGraphLayer.visible = false
+		self.activeGraphLayer.disconnect_signals(self.top_menu)
 		self.activeGraphLayer.save()
+		is_switch = true
 	self.activeGraphLayer = layer
 	self.activeGraphLayer.visible = true
 	self.activeGraphLayer.set_active(true)
-	self.activeGraphLayer.setup_ui(self.top_menu)
+	self.activeGraphLayer.setup_ui(self.top_menu, is_switch)
 	if self.activeGraphLayer.get_id() == 0:
 		self.activeGraphLayer.set_id(self.last_layer_num)
 		self.last_layer_num += 1

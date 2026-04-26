@@ -1,5 +1,5 @@
 class_name Layer extends GraphEdit
-# TODO: fix re-size scaling
+# TODO: fix top menu re-size scaling
 # TODO: disconnect signals on switch
 
 signal zoom_changed(zoom: float)
@@ -8,9 +8,10 @@ var _old_zoom: float = 0
 var is_active = true
 var _id: int = 0
 var bgColor = Color(0, 0.5, 0, 0.3)
-var disable_zoom_label = false
+var disable_zoom_label: bool = false
 var graph_nodes_list: Array[FlexNode] = []
-var bgStyleBox = StyleBoxFlat.new()
+var bgStyleBox: StyleBoxFlat = StyleBoxFlat.new()
+var menu_box_size: Vector2 = Vector2.ZERO
 
 #region Init/Ready/Process/Close
 func _init() -> void:
@@ -45,6 +46,15 @@ func close() -> void:
 	for node in self.graph_nodes_list:
 		node.close()
 		self.remove_child(node)
+		
+func disconnect_signals(menu: TopMenu) -> void:
+	# connecc the signals
+	if self.zoom_changed.is_connected(menu._update_zoom_label):
+		self.zoom_changed.disconnect(menu._update_zoom_label)
+	#menu.get_minimap_button().pressed.connect(func(): self.minimap_enabled = !self.minimap_enabled)
+	if menu.get_rearrange_button_button().pressed.is_connected(self.arrange_nodes):
+		menu.get_rearrange_button_button().pressed.disconnect(self.arrange_nodes)
+		
 #endregion
 
 #region Getter/Setter
@@ -86,36 +96,36 @@ func save() -> JSON:
 #endregion
 
 #region UI Handling/Setup
-func setup_ui(menu:TopMenu) -> void:
+func setup_ui(top_menu:TopMenu, is_layer_switch:bool = false) -> void:
 	# can't override that damned self.get_menu_hbox() *grrrr*
 	# connecc the signals
-	if not self.zoom_changed.is_connected(menu._update_zoom_label):
-		self.zoom_changed.connect(menu._update_zoom_label)
+	if not self.zoom_changed.is_connected(top_menu._update_zoom_label):
+		self.zoom_changed.connect(top_menu._update_zoom_label)
 	self.zoom_changed.emit(self.zoom)
-	menu.get_minimap_button().pressed.connect(func(): self.minimap_enabled = !self.minimap_enabled)
-	if not menu.get_rearrange_button_button().pressed.is_connected(self.arrange_nodes):
-		menu.get_rearrange_button_button().pressed.connect(self.arrange_nodes)
-	# menu "refresh"
+	top_menu.get_minimap_button().pressed.connect(func(): self.minimap_enabled = !self.minimap_enabled)
+	if not top_menu.get_rearrange_button_button().pressed.is_connected(self.arrange_nodes):
+		top_menu.get_rearrange_button_button().pressed.connect(self.arrange_nodes)
+	# menu_box "refresh"
 	var menu_box = self.get_menu_hbox()
+	if self.menu_box_size == Vector2.ZERO and menu_box.size != Vector2.ZERO and is_layer_switch:
+		self.menu_box_size = menu_box.size
+	menu_box.visible = false
 	for child in menu_box.get_children():
 		menu_box.remove_child(child)
-	for node in menu.get_elements():
+	for node in top_menu.get_elements():
 		if node.get_parent():
 			node.reparent(menu_box)
 		else:
 			menu_box.add_child(node)
-	menu_box.notification(NOTIFICATION_CHILD_ORDER_CHANGED)
-	
-	# TODO: fix menu_box and PanelContainer resizing 
-	menu_box.visible = false
-	menu_box.custom_minimum_size = menu_box.size + Vector2(0, 0)
-	menu_box.reset_size()
-	menu_box.get_parent().custom_minimum_size = menu_box.size #+ Vector2(2, 2)
-	menu_box.get_parent().reset_size()
-	menu_box.visible = true
-	
 	self.show_zoom_label = true
 	self.minimap_enabled = false
+
+	if self.menu_box_size != Vector2.ZERO and is_layer_switch:
+		menu_box.reset_size()
+		menu_box.get_parent().custom_minimum_size = menu_box_size + Vector2(8, 4)
+		menu_box.get_parent().reset_size()
+	menu_box.visible = true
+	
 #endregion
 
 
