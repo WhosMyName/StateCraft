@@ -1,12 +1,14 @@
 class_name FlexNode extends GraphNode
 # TODO: make every element it's own class
 # TODO: make textedit the whole ting
-# TODO: handle closing too i guess
+# TODO: handle resizing generally (both tiles and node)
+# TODO: use hseparator as resize bar
 
 var add_button_container: VBoxContainer = null
 var add_elem_button: MenuButton = null
 var color_left = Color(0,1,0)
 var color_right = Color(1,0,0)
+var tiles: Array[BaseTile] = []
 
 
 #region Init/Ready/Process/Close
@@ -58,44 +60,23 @@ func load_from_json(data: Dictionary) -> void:
 
 #region (File-)Editor Windows
 func open_edit_window(editor, content, content_size: Vector2) -> void:
-	if editor == FileDialog:
-		var window: FileDialog = editor.new()
-		window.access = FileDialog.ACCESS_FILESYSTEM
-		window.file_mode = FileDialog.FILE_MODE_OPEN_FILE
-		window.use_native_dialog = true # Optional: uses OS native picker
-		window.mode_overrides_title = false
-		window.title = "Open " + "Image" if content is TextureRect else "Audio" if content is AudioPlayer else "Video"
-		window.file_selected.connect(self.close_file_access_window.bind(content))
-		self.get_parent().add_child(window)
-		window.popup_centered()
-		window.size = content_size
-		window.position = self.get_parent_area_size() / 2
-	else:
-		var window: Window = Window.new()
-		editor.size = content_size
-		editor.text = content.text
-		window.close_requested.connect(self.close_edit_text_window.bind(window, editor, content))
-		window.add_child(editor)
-		self.get_parent().add_child(window)
-		window.size = content_size
-		window.position = self.get_parent_area_size() / 2
-		window.size_changed.connect(func(): editor.size = window.size)
-	
+	var window: Window = Window.new()
+	editor.size = content_size
+	editor.text = content.text
+	window.close_requested.connect(self.close_edit_text_window.bind(window, editor, content))
+	window.add_child(editor)
+	self.get_parent().add_child(window)
+	window.size = content_size
+	window.position = self.get_parent_area_size() / 2
+	window.size_changed.connect(func(): editor.size = window.size)
+
 func close_edit_text_window(window: Window, editor: CodeEdit, content: RichTextLabel) -> void:
 	content.text = editor.text
 	window.hide()
 	window.remove_child(editor)
 	self.get_parent().remove_child(window)
 
-func close_file_access_window(path: String, content) -> void:
-	if content is TextureRect:
-		content.texture = load(path)
-	elif content is AudioPlayer:
-		content.load_from_file(path)
-		print("Audio loaded:")
-	else: # Fideo
-		pass
-	print(path)
+
 #endregion
 
 #region Node Element Handling
@@ -118,8 +99,7 @@ func make_generic_box(elem_type, editor_type, content_size:  Vector2) -> void:
 		content.texture = preload("res://icons/clock.svg")
 		content.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		content.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	elif content is AudioPlayer: # AUDIO
-		editor = editor_type
+
 	edit_button.pressed.connect(self.open_edit_window.bind(editor, content, Vector2(500, 500)))		
 	vbox.add_child(HSeparator.new())
 	vbox.add_child(content)
@@ -134,6 +114,14 @@ func make_generic_box(elem_type, editor_type, content_size:  Vector2) -> void:
 	self.set_slot(self.get_child_count() - 2, true, 0, self.color_left, true, 0, self.color_right)
 	self.move_child(self.add_button_container, self.get_child_count())
 
+func smol_box(tile: BaseTile, elem_size):
+	self.tiles.append(tile)
+	tile.size = elem_size
+	tile.custom_minimum_size = elem_size
+	self.add_child(tile)
+	# self.get_child_count() - 2, because self.add_button_container and reordering from below
+	self.set_slot(self.get_child_count() - 2, true, 0, self.color_left, true, 0, self.color_right)
+	self.move_child(self.add_button_container, self.get_child_count() - 1)
 
 func add_elem(id) -> void:
 	# dynamically load element types (plaintext, markdown, video, audio, image)
@@ -142,9 +130,9 @@ func add_elem(id) -> void:
 	elif id == 1: # Markdown
 		self.make_generic_box(RichTextLabel, CodeEdit, Vector2(150, 150))
 	elif id == 2: # Image
-		self.make_generic_box(TextureRect, FileDialog, Vector2(200, 200))
+		self.smol_box(ImageViewerTile.new(), Vector2(200, 240))
 	elif id == 3: # Saund
-		self.make_generic_box(AudioPlayer, FileDialog, Vector2(220, 60))
+		self.smol_box(AudioPlayerTile.new(), Vector2(185, 120))
 	elif id == 4: # WHOOOP, OK GARMIN, FIDEO SPEICHERN!
 		# TODO: implement https://github.com/VoylinsGamedevJourney/gde_gozen
 		self.make_generic_box(VideoStreamPlayer, FileDialog, Vector2(400, 400))
