@@ -1,5 +1,5 @@
 class_name MainWindow extends Node2D
-# TODO: add handling switching layers
+# TODO: fix the leaky mem
 
 var activeGraphLayer: Layer = null
 var last_layer_num = 1 # only needed if previous layer is interactable
