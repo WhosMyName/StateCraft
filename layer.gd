@@ -8,7 +8,6 @@ var _old_zoom: float = 0
 var is_active = true
 var _id: int = 0
 var bgColor = Color(0, 0.5, 0, 0.3)
-var disable_zoom_label: bool = false
 var graph_nodes_list: Array[FlexNode] = []
 var bgStyleBox: StyleBoxFlat = StyleBoxFlat.new()
 var menu_box_size: Vector2 = Vector2.ZERO
@@ -89,9 +88,19 @@ func load_from_json(data: Dictionary) -> void:
 	# TODO: load button defaults
 	pass
 
-func save() -> JSON:
-	# TODO: define this
-	return JSON.new()
+func save() -> String:
+	#var json_data = JSON.new()
+	if not self.graph_nodes_list: # return null if there're no nodes
+		return ""
+	var data = {
+		"_id": self._id,
+		"is_active": self.is_active,
+		"bgColor": self.bgColor,
+		"nodes": []
+	}
+	for node in self.graph_nodes_list:
+		data["nodes"].append(node.save())
+	return JSON.stringify(data, "\t")
 
 #endregion
 

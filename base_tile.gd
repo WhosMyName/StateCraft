@@ -23,7 +23,7 @@ func select_file(title: String):
 	window.use_native_dialog = true # Optional: uses OS native picker
 	window.mode_overrides_title = false
 	window.title = title
-	window.file_selected.connect(self.load_from_file)
+	window.file_selected.connect(self.load_from_path)
 	self.add_child(window)
 	window.popup_centered()
 	window.size = Vector2(1024, 576)

@@ -29,9 +29,9 @@ func save(path: String) -> void:
 		return
 	for layer in self.layers:
 		var filename = "layer_" + str(layer.get_id()) + ".json"
-		var data: JSON = layer.save()
+		var data: String = layer.save()
 		writer.start_file(filename)
-		writer.write_file(data.to_string().to_utf8_buffer())
+		writer.write_file(data.to_utf8_buffer())
 		writer.close_file()
 	writer.close()
 	

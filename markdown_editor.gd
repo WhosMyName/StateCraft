@@ -53,6 +53,17 @@ func close() -> void:
 	queue_free()
 #endregion
 
+#region Save/Load Data
+func save() -> Dictionary:
+	var data: Dictionary = {
+		"name": "MarkDownEditorTile",
+		"text": self.label.text
+	}
+	return data
+
+func load(data: Dictionary) -> void:
+	pass
+#endregion
 
 #region Window Handling
 func open_edit_window() -> void:

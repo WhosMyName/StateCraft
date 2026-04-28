@@ -56,6 +56,17 @@ func set_bg_color() -> void:
 #region Load/Save Data
 func load_from_json(data: Dictionary) -> void:
 	pass
+	
+func save() -> Dictionary:
+	# TODO: save connections (here?)
+	var data = {
+		"color_left": self.color_left,
+		"color_right": self.color_right,
+		"tiles": []
+	}
+	for tile in self.tiles:
+		data["tiles"].append(tile.save())
+	return data
 #endregion
 
 #region Node Element Handling

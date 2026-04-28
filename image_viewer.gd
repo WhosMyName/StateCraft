@@ -4,6 +4,7 @@ class_name ImageViewerTile extends BaseTile
 var image: TextureRect = null
 var select_file_button: Button = null
 var delete_node_button: Button = null
+var file_path: String = ""
 
 
 #region Init/Ready/Process/Close
@@ -48,5 +49,18 @@ func close() -> void:
 	queue_free()
 #endregion
 
-func load_from_file(path) -> void:
+#region Save/Load Data
+func save() -> Dictionary:
+	var data: Dictionary = {
+		"name": "ImageViewerTile",
+		"path": self.file_path
+	}
+	return data
+
+func load(data: Dictionary) -> void:
+	pass
+#endregion
+
+func load_from_path(path) -> void:
+	self.file_path = path
 	self.image.texture = ImageTexture.create_from_image(Image.load_from_file(path))

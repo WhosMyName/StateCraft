@@ -38,3 +38,16 @@ func close() -> void:
 	self.get_parent().remove_child(self)
 	queue_free()
 #endregion
+
+
+#region Save/Load Data
+func save() -> Dictionary:
+	var data: Dictionary = {
+		"name": "TextEditorTile",
+		"text": self.editor.text
+	}
+	return data
+
+func load(data: Dictionary) -> void:
+	pass
+#endregion

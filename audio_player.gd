@@ -6,13 +6,14 @@ var title_label: Label = null
 var volume_label: Label = null
 var play_pause_button: Button = null
 var seeker: HSlider = null
-var volume: HSlider = null
+var volume_slider: HSlider = null
 var audio_pos: float = 0.0
 var curr_track_name: String = "null"
 var seeker_timer: float = 0
 var track_len: float = 0
 var select_file_button: Button = null
 var delete_node_button: Button = null
+var file_path = ""
 
 #region Init/Ready/Process/Close
 # Called when the node enters the scene tree for the first time.
@@ -35,10 +36,10 @@ func _ready() -> void:
 	self.seeker = HSlider.new()
 	self.seeker.custom_minimum_size = Vector2(160, 20)
 	#self.seeker.set_stretch_ratio(9)
-	self.volume = HSlider.new()
-	self.volume.custom_minimum_size = Vector2(120, 25)
-	self.volume.value = 50.0
-	#self.volume.set_stretch_ratio(9)
+	self.volume_slider = HSlider.new()
+	self.volume_slider.custom_minimum_size = Vector2(120, 25)
+	self.volume_slider.value = 50.0
+	#self.volume_slider.set_stretch_ratio(9)
 	var fake_volume_label = Button.new()
 	fake_volume_label.icon = preload("res://icons/sound.svg")
 	fake_volume_label.add_theme_color_override("icon_disabled_color", Color(1, 1, 1, 1))
@@ -54,7 +55,7 @@ func _ready() -> void:
 	upper_hbox.add_child(self.seeker)
 	
 	lower_hbox.add_child(fake_volume_label)
-	lower_hbox.add_child(volume)
+	lower_hbox.add_child(volume_slider)
 	lower_hbox.add_child(self.volume_label)
 	
 	button_hbox.add_child(self.select_file_button)
@@ -69,7 +70,7 @@ func _ready() -> void:
 	# Signals
 	self.play_pause_button.pressed.connect(self._play_pause_audio)
 	self.seeker.drag_ended.connect(self._seek)
-	self.volume.drag_ended.connect(self._volume)
+	self.volume_slider.drag_ended.connect(self._volume)
 	self.delete_node_button.pressed.connect(self.close)
 	self.select_file_button.pressed.connect(self.select_file.bind("Open Audio:"))
 	# finalize
@@ -87,16 +88,30 @@ func _process(delta: float) -> void:
 func close() -> void:
 	disconnect_signal(self.play_pause_button.pressed)
 	disconnect_signal(self.seeker.drag_ended)
-	disconnect_signal(self.volume.drag_ended)
+	disconnect_signal(self.volume_slider.drag_ended)
 	disconnect_signal(self.delete_node_button.pressed)
 	disconnect_signal(self.select_file_button.pressed)
 	self.get_parent().remove_child(self)
 	queue_free()
 #endregion
 
+#region Save/Load Data
+func save() -> Dictionary:
+	var data: Dictionary = {
+		"name": "AudioPlayerTile",
+		"path": self.file_path,
+		"audio_pos": self.audio_pos,
+		"volume": self.volume_slider.value
+	}
+	return data
+
+func load(data: Dictionary) -> void:
+	pass
+#endregion
+
 #region Audio Loading
 
-func load_from_file(path) -> void:
+func load_from_path(path) -> void:
 	self.player.stop()
 	if path.ends_with(".mp3"):
 		self.player.stream = AudioStreamMP3.load_from_file(path)
@@ -109,6 +124,7 @@ func load_from_file(path) -> void:
 		self.title_label.text = "Unsupported format: \"." + format + "\"\nsee limitations.md"
 		self.size += Vector2(0, 30)
 		return
+	self.file_path = path
 	self.curr_track_name = path.rsplit("/", false, 1).get(1)
 	self.title_label.text = "Loaded: " + self.curr_track_name
 	self.track_len = self.player.stream.get_length() # get track len
@@ -144,7 +160,7 @@ func _slide_seeker() -> void:
 
 func _volume(value_changed: bool) -> void:
 	if value_changed:
-		self.player.volume_linear = self.volume.value / 100
-		self.volume_label.text = str(int(self.volume.value)) + "%"
+		self.player.volume_linear = self.volume_slider.value / 100
+		self.volume_label.text = str(int(self.volume_slider.value)) + "%"
 
 #endregion
