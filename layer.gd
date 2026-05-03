@@ -146,6 +146,8 @@ func setup_ui(top_menu:TopMenu, is_layer_switch:bool = false) -> void:
 	top_menu.get_minimap_button().pressed.connect(func(): self.minimap_enabled = !self.minimap_enabled)
 	if not top_menu.get_rearrange_button_button().pressed.is_connected(self.arrange_nodes):
 		top_menu.get_rearrange_button_button().pressed.connect(self.arrange_nodes)
+	if not top_menu.get_add_node_button().pressed.is_connected(self.add_node):
+		top_menu.get_add_node_button().pressed.connect(self.add_node)
 	# menu_box "refresh"
 	var menu_box = self.get_menu_hbox()
 	if self.menu_box_size == Vector2.ZERO and menu_box.size != Vector2.ZERO and is_layer_switch:

@@ -83,7 +83,6 @@ func _ready() -> void:
 	self.top_menu = preload("res://top_menu.gd").new()
 	self.spawnLayer()
 	self.top_menu.get_add_layer_button().pressed.connect(self.spawnLayer)
-	self.top_menu.get_add_node_button().pressed.connect(self.spawnNode)
 	self.top_menu.get_layer_up_button().pressed.connect(self.switch_layer_up)
 	self.top_menu.get_layer_down_button().pressed.connect(self.switch_layer_down)
 	self.top_menu.get_save_button().pressed.connect(self.select_file.bind("Save state machine to file:", true, self.save))
@@ -151,7 +150,4 @@ func switch_layer_by_id(layer_id: int) -> void:
 		if layer.get_id() == layer_id:
 			self.switch_layer(layer)
 
-func spawnNode() -> void:
-	# TODO: implement this in Layer
-	self.activeGraphLayer.add_node()
 #endregion
