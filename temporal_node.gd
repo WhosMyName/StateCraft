@@ -1,4 +1,4 @@
-class_name TemporalNode extends Node # links a node to a node on a different layer
+class_name TemporalNode extends BaseNode # links a node to a node on a different layer
 # TODO: implement button
 # TODO: implement signal(?) to main
 
@@ -17,6 +17,11 @@ func _process(delta: float) -> void:
 #endregion
 
 #region Load/Save Data
-func load_from_json(data: Dictionary) -> void:
-	pass
+func load_data(data: Dictionary) -> void:
+	super.load_data(data)
+
+func save(data: Dictionary = {}) -> Dictionary:
+	# TODO: save connections (here?)
+	# TODO: save files from tiles (and switch to internal path)
+	return super.save(data)
 #endregion

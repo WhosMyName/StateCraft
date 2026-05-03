@@ -96,8 +96,8 @@ func close() -> void:
 #endregion
 
 #region Save/Load Data
-func save() -> Dictionary:
-	var data: Dictionary = {
+func save(data: Dictionary = {}) -> Dictionary:
+	data = {
 		"name": "AudioPlayerTile",
 		"path": self.file_path,
 		"audio_pos": self.audio_pos,
@@ -105,13 +105,17 @@ func save() -> Dictionary:
 	}
 	return data
 
-func load(data: Dictionary) -> void:
-	pass
+func load_data(data: Dictionary) -> void:
+	self.load_from_path(data["path"])
+	self.audio_pos = data["audio_pos"]
+	self.volume_slider.value = data["volume"]
 #endregion
 
 #region Audio Loading
 
 func load_from_path(path) -> void:
+	if not path:
+		return
 	self.player.stop()
 	if path.ends_with(".mp3"):
 		self.player.stream = AudioStreamMP3.load_from_file(path)

@@ -41,13 +41,13 @@ func close() -> void:
 
 
 #region Save/Load Data
-func save() -> Dictionary:
-	var data: Dictionary = {
+func save(data: Dictionary = {}) -> Dictionary:
+	data = {
 		"name": "TextEditorTile",
 		"text": self.editor.text
 	}
 	return data
 
-func load(data: Dictionary) -> void:
-	pass
+func load_data(data: Dictionary) -> void:
+	self.editor.text = data["text"]
 #endregion

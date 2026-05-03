@@ -1,4 +1,4 @@
-class_name FlexNode extends GraphNode
+class_name FlexNode extends BaseNode
 # TODO: make every element it's own class 4/5
 # TODO: handle resizing generally (both tiles and node)
 # TODO: use hseparator as resize bar
@@ -9,7 +9,7 @@ var add_elem_button: MenuButton = null
 var color_left = Color(0,1,0)
 var color_right = Color(1,0,0)
 var tiles: Array[BaseTile] = []
-
+# TODO: implement UUID here instead of BaseTile
 
 #region Init/Ready/Process/Close
 func _init() -> void:
@@ -54,19 +54,31 @@ func set_bg_color() -> void:
 #endregion
 
 #region Load/Save Data
-func load_from_json(data: Dictionary) -> void:
-	pass
-	
-func save() -> Dictionary:
+func load_data(data: Dictionary) -> void:
+	self.color_left = JSON.to_native(data["color_left"])
+	self.color_right = JSON.to_native(data["color_right"])
+	for tile_data in data["tiles"]:
+		var tile: BaseTile = null
+		match tile_data["name"]:
+			"TextEditorTile": tile = add_elem(0)
+			"MarkDownEditorTile": tile = add_elem(1)
+			"ImageViewerTile": tile = add_elem(2)
+			"AudioPlayerTile": tile = add_elem(3)
+			"VideoPlayerTile": tile = add_elem(4)
+		tile.load_data(tile_data)
+	super.load_data(data)
+
+func save(data: Dictionary = {}) -> Dictionary:
 	# TODO: save connections (here?)
-	var data = {
-		"color_left": self.color_left,
-		"color_right": self.color_right,
+	# TODO: save files from tiles (and switch to internal path)
+	data = {
+		"color_left": JSON.from_native(self.color_left),
+		"color_right": JSON.from_native(self.color_right),
 		"tiles": []
 	}
 	for tile in self.tiles:
 		data["tiles"].append(tile.save())
-	return data
+	return super.save(data)
 #endregion
 
 #region Node Element Handling
@@ -79,16 +91,21 @@ func add_tile(tile: BaseTile, elem_size: Vector2):
 	self.set_slot(self.get_child_count() - 2, true, 0, self.color_left, true, 0, self.color_right)
 	self.move_child(self.add_button_container, self.get_child_count() - 1)
 
-func add_elem(id) -> void:
+func add_elem(id) -> BaseTile:
 	# dynamically load element types (plaintext, markdown, video, audio, image)
+	var tile = null
 	if id == 0: # PlainText
-		self.add_tile(TextEditorTile.new(), Vector2(200, 235))
+		tile = TextEditorTile.new()
+		self.add_tile(tile, Vector2(200, 235))
 	elif id == 1: # Markdown+
-		self.add_tile(MarkDownEditorTile.new(), Vector2(200, 240))
+		tile = MarkDownEditorTile.new()
+		self.add_tile(tile, Vector2(200, 240))
 	elif id == 2: # Image
-		self.add_tile(ImageViewerTile.new(), Vector2(200, 240))
+		tile = ImageViewerTile.new()
+		self.add_tile(tile, Vector2(200, 240))
 	elif id == 3: # Saund
-		self.add_tile(AudioPlayerTile.new(), Vector2(185, 120))
+		tile = AudioPlayerTile.new()
+		self.add_tile(tile, Vector2(185, 120))
 	elif id == 4: # WHOOOP, OK GARMIN, FIDEO SPEICHERN!
 		# TODO: implement https://github.com/VoylinsGamedevJourney/gde_gozen
 		# self.add_tile(VideoPlayerTile.new(), Vector2(400, 400))
@@ -96,5 +113,6 @@ func add_elem(id) -> void:
 	else:
 		pass
 	self.size = Vector2(0, 0)
+	return tile
 
 #endregion

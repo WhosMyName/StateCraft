@@ -54,15 +54,15 @@ func close() -> void:
 #endregion
 
 #region Save/Load Data
-func save() -> Dictionary:
-	var data: Dictionary = {
+func save(data: Dictionary = {}) -> Dictionary:
+	data = {
 		"name": "MarkDownEditorTile",
 		"text": self.label.text
 	}
 	return data
-
+	
 func load(data: Dictionary) -> void:
-	pass
+	self.label.text = data["text"]
 #endregion
 
 #region Window Handling

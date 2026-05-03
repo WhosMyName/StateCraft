@@ -50,7 +50,28 @@ func select_file(title: String, is_saving: bool, callback: Callable = self.load_
 	window.position = self.get_window().size / 2.0
 	
 func load_from_file(path):
-	pass
+	if self.layers.size() > 0:
+		# TODO: Ask to save
+		for layer in self.layers:
+			layer.close()
+			self.remove_child(layer)
+		
+	self.last_save_path = path
+	var zip_reader = ZIPReader.new()
+	zip_reader.open(path)
+	var files = zip_reader.get_files()
+	
+	files.sort()
+	for file in files:
+		if "layer" in file:
+			print("Loading file: ", file)
+			spawnLayer(true)
+			var data_string = zip_reader.read_file(file).get_string_from_utf8()
+			if data_string:
+				var parsed_string = JSON.parse_string(data_string)
+				self.activeGraphLayer.load_data(parsed_string)
+		if "meta" in file:
+			pass
 #endregion
 
 #region Init/Ready/Process/Close
@@ -69,24 +90,26 @@ func _ready() -> void:
 	self.top_menu.get_load_button().pressed.connect(self.select_file.bind("Load saved state machine from file:", false))
 	
 func _on_close() -> void:
-	self.save(self.last_save_path)
-	print("Klose requested")
+	# TODO: ask save on klose
+	#self.save(self.last_save_path)
 	for layer in self.layers:
 		layer.close()
-		self.remove_child(layer)
+		if layer.get_parent() == self:
+			self.remove_child(layer)
 	queue_free()
 #endregion
 
 #region Layer/Node Handling
-func spawnLayer() -> void:
+func spawnLayer(loaded_from_file: bool = false) -> void:
 	var layer = preload("res://layer.gd").new()
 	layer.setBGColor(Color(randf(), randf(), randf(), 0.3))
-	self.switch_layer(layer)
+	self.switch_layer(layer, loaded_from_file)
 
-func switch_layer(layer: Layer) -> void:
+func switch_layer(layer: Layer, loaded_from_file: bool = false) -> void:
 	var is_switch: bool = false
 	if self.activeGraphLayer:
-		self.activeGraphLayer.set_active(false)
+		if not loaded_from_file:
+			self.activeGraphLayer.set_active(false)
 		self.activeGraphLayer.set_visibility_layer(11 - self.activeGraphLayer.get_id())
 		self.activeGraphLayer.visible = false
 		self.activeGraphLayer.disconnect_signals(self.top_menu)
@@ -94,13 +117,14 @@ func switch_layer(layer: Layer) -> void:
 		is_switch = true
 	self.activeGraphLayer = layer
 	self.activeGraphLayer.visible = true
-	self.activeGraphLayer.set_active(true)
+	if not loaded_from_file:
+		self.activeGraphLayer.set_active(true)
+		if self.activeGraphLayer.get_id() == 0:
+			self.activeGraphLayer.set_id(self.last_layer_num)
+			self.last_layer_num += 1
+			if self.last_layer_num > 10:
+				self.top_menu.add_layer_button.disabled = true
 	self.activeGraphLayer.setup_ui(self.top_menu, is_switch)
-	if self.activeGraphLayer.get_id() == 0:
-		self.activeGraphLayer.set_id(self.last_layer_num)
-		self.last_layer_num += 1
-		if self.last_layer_num > 10:
-			self.top_menu.add_layer_button.disabled = true
 	if self.activeGraphLayer not in self.layers:
 		self.layers.append(self.activeGraphLayer)
 	if self.activeGraphLayer not in self.get_children():
@@ -122,6 +146,12 @@ func switch_layer_down() -> void:
 		if layer.get_id() == curr_layer_num - 1:
 			self.switch_layer(layer)
 
+func switch_layer_by_id(layer_id: int) -> void:
+	for layer in self.layers:
+		if layer.get_id() == layer_id:
+			self.switch_layer(layer)
+
 func spawnNode() -> void:
+	# TODO: implement this in Layer
 	self.activeGraphLayer.add_node()
 #endregion

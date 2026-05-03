@@ -50,17 +50,18 @@ func close() -> void:
 #endregion
 
 #region Save/Load Data
-func save() -> Dictionary:
-	var data: Dictionary = {
+func save(data: Dictionary = {}) -> Dictionary:
+	data = {
 		"name": "ImageViewerTile",
 		"path": self.file_path
 	}
 	return data
 
-func load(data: Dictionary) -> void:
-	pass
+func load_data(data: Dictionary) -> void:
+	self.load_from_path(data["path"])
 #endregion
 
 func load_from_path(path) -> void:
-	self.file_path = path
-	self.image.texture = ImageTexture.create_from_image(Image.load_from_file(path))
+	if path:
+		self.file_path = path
+		self.image.texture = ImageTexture.create_from_image(Image.load_from_file(path))

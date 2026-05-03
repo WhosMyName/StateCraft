@@ -1,7 +1,6 @@
 class_name Layer extends GraphEdit
-# TODO: fix top menu re-size scaling
-# TODO: disconnect signals on switch
-
+# TODO: fix top menu re-size scaling (keep size, until 1/2 original size then scale)
+# see _on_window_resized()
 signal zoom_changed(zoom: float)
 var _old_zoom: float = 0
 
@@ -11,6 +10,7 @@ var bgColor = Color(0, 0.5, 0, 0.3)
 var graph_nodes_list: Array[FlexNode] = []
 var bgStyleBox: StyleBoxFlat = StyleBoxFlat.new()
 var menu_box_size: Vector2 = Vector2.ZERO
+var node_number: = 0
 
 #region Init/Ready/Process/Close
 func _init() -> void:
@@ -27,6 +27,7 @@ func _ready() -> void:
 	self.connection_request.connect(self._on_connection_request)
 	self.disconnection_request.connect(self._on_disconnection_request)
 	self.delete_nodes_request.connect(self._on_delete_nodes_request)
+	self.node_selected.connect(self.center_on_node)
 	# TODO: maybe implement this
 	#self.copy_nodes_request
 	#self.paste_nodes_request
@@ -40,7 +41,6 @@ func _process(_delta: float) -> void:
 	pass
 	
 func close() -> void:
-	# TODO: save to file
 	print("Closing GraphEdit: ", self)
 	for node in self.graph_nodes_list:
 		node.close()
@@ -69,37 +69,69 @@ func set_id(id: int) -> void:
 func get_id() -> int:
 	return self._id
 
+#endregion
+
+#region Node Handling
 func add_node() -> void:
 	var node: FlexNode = preload("res://flex_node.gd").new()
-	# TODO: fix node positioning
-	node.position = self.get_viewport_rect().size / 2
-	print(node.position)
+	node.set_id(self.node_number)
+	self.node_number += 1 # TODO: maybe add safer node num checking
 	self.add_child(node)
 	self.graph_nodes_list.append(node)
+	node.position_offset = self.scroll_offset + (self.size / 2.0) - (node.size / 2)
+	print("Scroll Offset", self.scroll_offset)
+	print("Viewport Size: ", self.get_viewport_rect().size)
+	print("Node Pos: ", node.position)
+	print("Node position_offset: ", node.position_offset)
 	
+func find_node_by_id(id: int) -> BaseNode:
+	for node in self.graph_nodes_list:
+		if node.get_id() == id:
+			return node
+	return null
+	
+func center_on_node(node) -> void:
+	var new_scroll_offset = node.position_offset - (self.size / 2.0) / self.zoom
+	var tween: Tween = self.create_tween()
+	tween.tween_property(self, "scroll_offset", new_scroll_offset, 1)
 #endregion
 
 #region Load/Save Data
-func load_from_json(data: Dictionary) -> void:
-	# TODO: Load is_active
-	# TODO: Load id
-	# TODO: Load bgColor
-	# TODO: Create Nodes from NodeList
-	# TODO: load button defaults
-	pass
+func load_data(data: Dictionary) -> void:
+	self._id = data["_id"]
+	self.is_active = data["is_active"]
+	self.setBGColor(JSON.to_native(data["bgColor"]))
+	for node_data in data["nodes"]:
+		var node: FlexNode = preload("res://flex_node.gd").new()
+		self.add_child(node)
+		self.graph_nodes_list.append(node)
+		node.load_data(node_data)
+		if node.get_id() > self.node_number:
+			self.node_number = node.get_id()
+	for connection in data["connections"]:
+		connection["from_node"] = self.find_node_by_id(connection["from_node"]).name
+		connection["to_node"] = self.find_node_by_id(connection["to_node"]).name
+		self.connect_node(
+			connection["from_node"], connection["from_port"],
+			connection["to_node"], connection["to_port"]
+		)
 
 func save() -> String:
-	#var json_data = JSON.new()
 	if not self.graph_nodes_list: # return null if there're no nodes
 		return ""
 	var data = {
 		"_id": self._id,
 		"is_active": self.is_active,
-		"bgColor": self.bgColor,
-		"nodes": []
+		"bgColor": JSON.from_native(self.bgColor),
+		"nodes": [],
+		"connections": [] 
 	}
 	for node in self.graph_nodes_list:
 		data["nodes"].append(node.save())
+	for connection in self.connections:
+		connection["from_node"] = self.get_node(NodePath(connection["from_node"])).get_id()
+		connection["to_node"] = self.get_node(NodePath(connection["to_node"])).get_id()
+		data["connections"].append(connection)
 	return JSON.stringify(data, "\t")
 
 #endregion
