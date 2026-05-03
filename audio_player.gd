@@ -145,9 +145,11 @@ func _play_pause_audio() -> void:
 			self.audio_pos = self.player.get_playback_position() + AudioServer.get_time_since_last_mix()
 			self.player.stop()
 			self.title_label.text = "Paused..."
+			self.play_pause_button.add_theme_color_override("icon_normal_color", Color(1, 1, 1, 0.4))
 		else:
 			self.title_label.text = "Playing: " + self.curr_track_name
 			self.player.play(self.audio_pos)
+			self.play_pause_button.add_theme_color_override("icon_normal_color", Color(1, 1, 1, 1))
 
 func _seek(value_changed) -> void:
 	if value_changed:

@@ -18,7 +18,6 @@ func _init() -> void:
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
-	# load_from_json()
 	self.right_disconnects = true
 	self.zoom_min = 0.1
 	self.zoom_max = 4
@@ -43,17 +42,18 @@ func _process(_delta: float) -> void:
 func close() -> void:
 	print("Closing GraphEdit: ", self)
 	for node in self.graph_nodes_list:
-		node.close()
-		self.remove_child(node)
-		
+		if node:
+			node.close()
+			self.remove_child(node)
+
 func disconnect_signals(menu: TopMenu) -> void:
-	# connecc the signals
+	# disconnecc the signals
 	if self.zoom_changed.is_connected(menu._update_zoom_label):
 		self.zoom_changed.disconnect(menu._update_zoom_label)
-	#menu.get_minimap_button().pressed.connect(func(): self.minimap_enabled = !self.minimap_enabled)
+	if menu.get_minimap_button().pressed.is_connected(self.toggle_minimp):
+		menu.get_minimap_button().pressed.disconnect(self.toggle_minimp)
 	if menu.get_rearrange_button_button().pressed.is_connected(self.arrange_nodes):
 		menu.get_rearrange_button_button().pressed.disconnect(self.arrange_nodes)
-		
 #endregion
 
 #region Getter/Setter
@@ -143,7 +143,8 @@ func setup_ui(top_menu:TopMenu, is_layer_switch:bool = false) -> void:
 	if not self.zoom_changed.is_connected(top_menu._update_zoom_label):
 		self.zoom_changed.connect(top_menu._update_zoom_label)
 	self.zoom_changed.emit(self.zoom)
-	top_menu.get_minimap_button().pressed.connect(func(): self.minimap_enabled = !self.minimap_enabled)
+	if not top_menu.get_minimap_button().pressed.is_connected(self.toggle_minimp):
+		top_menu.get_minimap_button().pressed.connect(self.toggle_minimp)
 	if not top_menu.get_rearrange_button_button().pressed.is_connected(self.arrange_nodes):
 		top_menu.get_rearrange_button_button().pressed.connect(self.arrange_nodes)
 	if not top_menu.get_add_node_button().pressed.is_connected(self.add_node):
@@ -225,4 +226,9 @@ func _gui_input(event) -> void:
 	# Check if the event is a mouse button (scroll) or a touch gesture
 	if event is InputEventMouseButton or event is InputEventMagnifyGesture:
 		self._check_zoom.call_deferred()
+#endregion
+
+#region Minimapping
+func toggle_minimp() -> void:
+	self.minimap_enabled = !self.minimap_enabled
 #endregion
