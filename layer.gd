@@ -27,7 +27,7 @@ func _ready() -> void:
 	self.connection_request.connect(self._on_connection_request)
 	self.disconnection_request.connect(self._on_disconnection_request)
 	self.delete_nodes_request.connect(self._on_delete_nodes_request)
-	self.node_selected.connect(self.center_on_node)
+	#self.node_selected.connect(self.center_on_node)
 	# TODO: maybe implement this
 	#self.copy_nodes_request
 	#self.paste_nodes_request
