@@ -1,4 +1,5 @@
 class_name MarkDownEditorTile extends BaseTile
+# TODO: implement https://github.com/daenvil/MarkdownLabel
 
 var label: RichTextLabel = null
 var editor: CodeEdit = null

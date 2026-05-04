@@ -12,6 +12,7 @@ config_version=5
 
 config/name="StateCraft"
 run/main_scene="uid://cjhimwgek48v1"
+config/auto_accept_quit=false
 config/features=PackedStringArray("4.6", "GL Compatibility")
 run/max_fps=120
 run/low_processor_mode=true

@@ -1,5 +1,6 @@
 class_name MainWindow extends Node2D
 # TODO: fix the leaky mem
+# TODO: maybe fix disappearing borders/ghosting on close while saving
 
 var activeGraphLayer: Layer = null
 var last_layer_num = 1 # only needed if previous layer is interactable
@@ -8,6 +9,9 @@ var layers: Array[Layer] = []
 var hbox_size: Vector2 = Vector2()
 var last_save_path: String = ""
 var file_extension = ".csm"
+
+signal popup_resolved(choice: bool)
+signal saved
 
 #region Load/Save Data
 # https://docs.godotengine.org/en/stable/classes/class_json.html
@@ -34,6 +38,7 @@ func save(path: String) -> void:
 		writer.write_file(data.to_utf8_buffer())
 		writer.close_file()
 	writer.close()
+	self.saved.emit()
 	
 func select_file(title: String, is_saving: bool, callback: Callable = self.load_from_file):
 	var window: FileDialog = FileDialog.new()
@@ -50,8 +55,14 @@ func select_file(title: String, is_saving: bool, callback: Callable = self.load_
 	window.position = self.get_window().size / 2.0
 	
 func load_from_file(path):
-	if self.layers.size() > 0:
-		# TODO: Ask to save
+	if self.activeGraphLayer.has_nodes():
+		var answer = await self.ask_save_on_close()
+		if answer:
+			if not self.last_save_path:
+				self.select_file("Save state machine to file:", true, self.save)
+			else:
+				self.save(self.last_save_path)
+		await self.saved
 		for layer in self.layers:
 			layer.close()
 			self.remove_child(layer)
@@ -72,6 +83,22 @@ func load_from_file(path):
 				self.activeGraphLayer.load_data(parsed_string)
 		if "meta" in file:
 			pass
+
+func ask_save_on_close() -> bool:
+	var popup = ConfirmationDialog.new()
+	popup.transient = true 
+	popup.exclusive = true
+	popup.confirmed.connect(func(): popup_resolved.emit(true))
+	popup.canceled.connect(func(): popup_resolved.emit(false))
+	popup.title = "Leaving?"
+	popup.dialog_text = "Wanna save your progress?"
+	popup.ok_button_text = "Yay o:)"
+	popup.cancel_button_text = "Nay >:)"
+	self.add_child(popup)
+	popup.popup_centered()
+	var choice: bool = await popup_resolved
+	popup.queue_free()
+	return choice
 #endregion
 
 #region Init/Ready/Process/Close
@@ -79,7 +106,8 @@ func _init() -> void:
 	pass
 
 func _ready() -> void:
-	get_window().close_requested.connect(self._on_close)
+	get_tree().root.close_requested.connect(_on_close_requested)
+	
 	self.top_menu = preload("res://top_menu.gd").new()
 	self.spawnLayer()
 	self.top_menu.get_add_layer_button().pressed.connect(self.spawnLayer)
@@ -88,17 +116,25 @@ func _ready() -> void:
 	self.top_menu.get_save_button().pressed.connect(self.select_file.bind("Save state machine to file:", true, self.save))
 	self.top_menu.get_load_button().pressed.connect(self.select_file.bind("Load saved state machine from file:", false))
 	
-func _on_close() -> void:
-	# TODO: ask save on klose
-	#self.save(self.last_save_path)
+func _on_close(save_on_close: bool = false) -> void:
+	if save_on_close:
+		if not self.last_save_path:
+			self.select_file("Save state machine to file:", true, self.save)
+		else:
+			self.save(self.last_save_path)
+		await self.saved
 	for layer in self.layers:
 		layer.close()
 		if layer.get_parent() == self:
 			self.remove_child(layer)
-	queue_free()
+	get_tree().quit()
+
+func _on_close_requested():
+		var answer = await self.ask_save_on_close()
+		self._on_close(answer)
 #endregion
 
-#region Layer/Node Handling
+#region Layer Handling
 func spawnLayer(loaded_from_file: bool = false) -> void:
 	var layer = preload("res://layer.gd").new()
 	layer.setBGColor(Color(randf(), randf(), randf(), 0.3))
@@ -131,7 +167,6 @@ func switch_layer(layer: Layer, loaded_from_file: bool = false) -> void:
 	self.activeGraphLayer.set_size(get_window().size)
 	self.activeGraphLayer.set_position(Vector2(0, 0))
 	self.top_menu.set_layer_label_text(str(self.activeGraphLayer.get_id()))
-	#self.queue_redraw()
 
 func switch_layer_up() -> void:
 	var curr_layer_num = self.activeGraphLayer.get_id()
@@ -149,5 +184,5 @@ func switch_layer_by_id(layer_id: int) -> void:
 	for layer in self.layers:
 		if layer.get_id() == layer_id:
 			self.switch_layer(layer)
-
+	push_error("Couldn't find layer with id: ", layer_id)
 #endregion

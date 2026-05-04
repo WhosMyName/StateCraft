@@ -1,5 +1,4 @@
 class_name AudioPlayerTile extends BaseTile
-# TODO: add alpha visual fancyness with play_pause_button when pressed
 
 var player: AudioStreamPlayer = null
 var title_label: Label = null

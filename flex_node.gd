@@ -9,7 +9,6 @@ var add_elem_button: MenuButton = null
 var color_left = Color(0,1,0)
 var color_right = Color(1,0,0)
 var tiles: Array[BaseTile] = []
-# TODO: implement UUID here instead of BaseTile
 
 #region Init/Ready/Process/Close
 func _init() -> void:
@@ -69,7 +68,6 @@ func load_data(data: Dictionary) -> void:
 	super.load_data(data)
 
 func save(data: Dictionary = {}) -> Dictionary:
-	# TODO: save connections (here?)
 	# TODO: save files from tiles (and switch to internal path)
 	data = {
 		"color_left": JSON.from_native(self.color_left),

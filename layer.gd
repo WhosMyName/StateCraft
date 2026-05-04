@@ -1,6 +1,7 @@
 class_name Layer extends GraphEdit
 # TODO: fix top menu re-size scaling (keep size, until 1/2 original size then scale)
 # see _on_window_resized()
+# TODO: fix on node click centering
 signal zoom_changed(zoom: float)
 var _old_zoom: float = 0
 
@@ -69,6 +70,8 @@ func set_id(id: int) -> void:
 func get_id() -> int:
 	return self._id
 
+func has_nodes() -> bool:
+	return true if self.graph_nodes_list.size() > 0 else false
 #endregion
 
 #region Node Handling
@@ -91,9 +94,9 @@ func find_node_by_id(id: int) -> BaseNode:
 	return null
 	
 func center_on_node(node) -> void:
-	var new_scroll_offset = node.position_offset - (self.size / 2.0) / self.zoom
+	var new_scroll_offset = (node.position_offset + (node.size / 2.0)) - ((self.size / 2.0) / self.zoom)
 	var tween: Tween = self.create_tween()
-	tween.tween_property(self, "scroll_offset", new_scroll_offset, 1)
+	tween.tween_property(self, "scroll_offset", new_scroll_offset, 0.5).set_trans(Tween.TRANS_QUINT)
 #endregion
 
 #region Load/Save Data
