@@ -7,3 +7,6 @@
 [submodule "addons/godot-uuid"]
 	path = addons/godot-uuid
 	url = https://github.com/binogure-studio/godot-uuid
+[submodule "addons/MarkdownLabel_repo"]
+	path = addons/MarkdownLabel_repo
+	url = https://github.com/daenvil/MarkdownLabel

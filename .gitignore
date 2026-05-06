@@ -15,3 +15,5 @@ export_credentials.cfg
 
 # GDE GoZen 
 addons/gde_gozen/
+addons/uuid/
+addons/markdownlabel/
