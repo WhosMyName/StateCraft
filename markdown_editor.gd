@@ -9,7 +9,7 @@ var edit_text_button: Button = null
 #region Init/Ready/Process/Close
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
-	self.label = RichTextLabel.new()
+	self.label = MarkdownLabel.new()
 	self.label.size = Vector2(200, 200)
 	self.label.custom_minimum_size = self.label.size
 	self.label.text = "Press the edit button below to start editing text.\nIt'll be rendered upon closing the editor window. :)"
