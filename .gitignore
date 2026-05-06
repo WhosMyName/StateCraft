@@ -12,3 +12,6 @@ export_credentials.cfg
 
 # Imported translations (automatically generated from CSV files)
 *.translation
+
+# GDE GoZen 
+addons/gde_gozen/
