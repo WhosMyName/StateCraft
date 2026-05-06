@@ -15,6 +15,7 @@ func _init() -> void:
 	pass
 
 func _ready() -> void:
+	super._ready()
 	self.add_button_container = VBoxContainer.new()
 	self.add_elem_button = MenuButton.new()
 	self.add_elem_button.icon = preload("res://icons/add_layer.svg")

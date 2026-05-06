@@ -1,6 +1,8 @@
 class_name MainWindow extends Node2D
 # TODO: fix the leaky mem
 # TODO: maybe fix disappearing borders/ghosting on close while saving
+# TODO: add 10 sec timer after saving to not ask on close
+# TODO: maybe ask to move node ressources to savefile or separate filetype
 
 var activeGraphLayer: Layer = null
 var last_layer_num = 1 # only needed if previous layer is interactable
@@ -48,6 +50,7 @@ func select_file(title: String, is_saving: bool, callback: Callable = self.load_
 	window.mode_overrides_title = false
 	window.title = title
 	window.add_filter("*" + self.file_extension, "Compressed State Machine", "application/x-zip-compressed")
+	window.add_filter("*" + self.file_extension.replace(".", ".m"), "Movable Compressed State Machine", "application/x-zip-compressed")
 	window.file_selected.connect(callback)
 	self.add_child(window)
 	window.popup_centered()
@@ -66,6 +69,7 @@ func load_from_file(path):
 		for layer in self.layers:
 			layer.close()
 			self.remove_child(layer)
+		self.layers.clear()
 		
 	self.last_save_path = path
 	var zip_reader = ZIPReader.new()
