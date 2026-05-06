@@ -1,0 +1,9 @@
+[submodule "addons/gde_gozen_repo"]
+	path = addons/gde_gozen_repo
+	url = https://github.com/VoylinsGamedevJourney/gde_gozen
+[submodule "addons/MarkdownLabel"]
+	path = addons/MarkdownLabel
+	url = https://github.com/daenvil/MarkdownLabel
+[submodule "addons/godot-uuid"]
+	path = addons/godot-uuid
+	url = https://github.com/binogure-studio/godot-uuid
