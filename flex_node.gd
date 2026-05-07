@@ -106,9 +106,7 @@ func add_elem(id) -> BaseTile:
 		tile = AudioPlayerTile.new()
 		self.add_tile(tile, Vector2(185, 120))
 	elif id == 4: # WHOOOP, OK GARMIN, FIDEO SPEICHERN!
-		# TODO: implement https://github.com/VoylinsGamedevJourney/gde_gozen
-		# self.add_tile(VideoPlayerTile.new(), Vector2(400, 400))
-		pass
+		self.add_tile(VideoPlayerTile.new(), Vector2(450, 450))
 	else:
 		pass
 	self.size = Vector2(0, 0)

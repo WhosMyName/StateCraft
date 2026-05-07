@@ -1,11 +1,12 @@
 class_name BaseTile extends Control
 
-var _id = 0 # layer id
-var iid = 0 # cross-layer id
+#var _id = 0 # layer id
+#var iid = 0
 #region Init/Ready/Process/Close
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
-	self._iid = self.get_instance_id()
+	#self._iid = self.get_instance_id()
+	pass
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(_delta: float) -> void:
@@ -19,11 +20,11 @@ func load_data(_data: Dictionary) -> void:
 #endregion
 
 #region Getter/Setter
-func get_id() -> int:
-	return self._id
+#func get_id() -> int:
+	#return self._id
 	
-func set_id(nid: int) -> void:
-	self._id = nid
+#func set_id(nid: int) -> void:
+	#self._id = nid
 #endregion
 
 #region Signalhandling

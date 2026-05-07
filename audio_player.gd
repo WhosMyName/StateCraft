@@ -54,7 +54,7 @@ func _ready() -> void:
 	upper_hbox.add_child(self.seeker)
 	
 	lower_hbox.add_child(fake_volume_label)
-	lower_hbox.add_child(volume_slider)
+	lower_hbox.add_child(self.volume_slider)
 	lower_hbox.add_child(self.volume_label)
 	
 	button_hbox.add_child(self.select_file_button)
