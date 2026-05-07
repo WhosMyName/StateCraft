@@ -99,6 +99,7 @@ func load_from_path(path) -> void:
 	self.curr_video_name = path.rsplit("/", false, 1).get(1)
 	self.title_label.text = "Loaded: " + self.curr_video_name
 	self.video_len = self.player.get_video_length_float() # get track len
+	self.seeker.value = 0
 	print("VidLen: ", self.video_len)
 	self.video_pos = 0
 	print("Loading video from ", path)

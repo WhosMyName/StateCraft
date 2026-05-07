@@ -133,6 +133,7 @@ func load_from_path(path) -> void:
 	self.track_len = self.player.stream.get_length() # get track len
 	print("TrackLen: ", self.track_len)
 	self.audio_pos = 0.0
+	self.seeker.value = 0
 	print("Loading audio from ", path)
 #endregion
 
