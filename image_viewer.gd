@@ -61,7 +61,7 @@ func load_data(data: Dictionary) -> void:
 	self.load_from_path(data["path"])
 #endregion
 
-func load_from_path(path) -> void:
+func load_from_path(path: String) -> void:
 	if path:
 		self.file_path = path
 		self.image.texture = ImageTexture.create_from_image(Image.load_from_file(path))

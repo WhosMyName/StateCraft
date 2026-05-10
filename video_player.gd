@@ -90,6 +90,23 @@ func close() -> void:
 	queue_free()
 #endregion
 
+#region Save/Load Data
+func save(data: Dictionary = {}) -> Dictionary:
+	data = {
+		"name": "VideoPlayerTile",
+		"path": self.file_path,
+		"video_pos": self.video_pos,
+		"volume": self.volume_slider.value
+	}
+	return data
+
+func load_data(data: Dictionary) -> void:
+	self.load_from_path(data["path"])
+	self.video_pos = data["video_pos"]
+	self.volume_slider.value = data["volume"]
+	self._seek(true)
+	self._volume(true)
+#endregion
 
 func load_from_path(path) -> void:
 	if not path:
@@ -104,6 +121,7 @@ func load_from_path(path) -> void:
 	self.video_pos = 0
 	print("Loading video from ", path)
 
+#region Video Controls
 func _play_pause_video() -> void:
 	if self.player.path:
 		if self.player.is_playing:
@@ -115,7 +133,7 @@ func _play_pause_video() -> void:
 			self.player.play()
 			self.play_pause_button.add_theme_color_override("icon_normal_color", Color(1, 1, 1, 1))
 
-func _seek(value_changed) -> void:
+func _seek(value_changed: bool) -> void:
 	if value_changed:
 		self.video_pos = int(self.seeker.get_as_ratio() * self.player.get_video_frame_count())
 		self.player.seek_frame(self.video_pos)
@@ -125,3 +143,4 @@ func _volume(value_changed: bool) -> void:
 	if value_changed:
 		self.player.audio_player.volume_linear = self.volume_slider.value / 100
 		self.volume_label.text = str(int(self.volume_slider.value)) + "%"
+#endregion

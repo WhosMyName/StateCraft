@@ -108,6 +108,8 @@ func load_data(data: Dictionary) -> void:
 	self.load_from_path(data["path"])
 	self.audio_pos = data["audio_pos"]
 	self.volume_slider.value = data["volume"]
+	self._seek(true)
+	self._volume(true)
 #endregion
 
 #region Audio Loading
@@ -151,7 +153,7 @@ func _play_pause_audio() -> void:
 			self.player.play(self.audio_pos)
 			self.play_pause_button.add_theme_color_override("icon_normal_color", Color(1, 1, 1, 1))
 
-func _seek(value_changed) -> void:
+func _seek(value_changed: bool) -> void:
 	if value_changed:
 		self.audio_pos = self.seeker.get_as_ratio() * self.track_len
 		self.player.seek(self.audio_pos)

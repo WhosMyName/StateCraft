@@ -1,16 +1,18 @@
 class_name MainWindow extends Node2D
 # TODO: fix the leaky mem
-# TODO: maybe fix disappearing borders/ghosting on close while saving
-# TODO: add 10 sec timer after saving to not ask on close
+# TODO: fix closing issues
 # TODO: maybe ask to move node ressources to savefile or separate filetype
+# TODO: maybe fix disappearing borders/ghosting on close while saving
 
 var activeGraphLayer: Layer = null
-var last_layer_num = 1 # only needed if previous layer is interactable
+var last_layer_num: int = 1 # only needed if previous layer is interactable
 var top_menu: TopMenu = null
 var layers: Array[Layer] = []
 var hbox_size: Vector2 = Vector2()
 var last_save_path: String = ""
-var file_extension = ".csm"
+var file_extension: String = ".csm"
+var save_timer: float = 0.0
+var save_ask: bool = false
 
 signal popup_resolved(choice: bool)
 signal saved
@@ -35,6 +37,7 @@ func save(path: String) -> void:
 		return
 	for layer in self.layers:
 		var filename = "layer_" + str(layer.get_id()) + ".json"
+		print("Saving Layer: ", filename)
 		var data: String = layer.save()
 		writer.start_file(filename)
 		writer.write_file(data.to_utf8_buffer())
@@ -69,18 +72,19 @@ func load_from_file(path):
 		for layer in self.layers:
 			layer.close()
 			self.remove_child(layer)
-		self.layers.clear()
+	self.layers.clear()
 		
 	self.last_save_path = path
 	var zip_reader = ZIPReader.new()
-	zip_reader.open(path)
+	if zip_reader.open(path) != OK:
+		return
 	var files = zip_reader.get_files()
 	
 	files.sort()
 	for file in files:
 		if "layer" in file:
 			print("Loading file: ", file)
-			spawnLayer(true)
+			self.spawnLayer(true)
 			var data_string = zip_reader.read_file(file).get_string_from_utf8()
 			if data_string:
 				var parsed_string = JSON.parse_string(data_string)
@@ -110,7 +114,7 @@ func _init() -> void:
 	pass
 
 func _ready() -> void:
-	get_tree().root.close_requested.connect(_on_close_requested)
+	get_tree().root.close_requested.connect(_on_close)
 	
 	self.top_menu = preload("res://top_menu.gd").new()
 	self.spawnLayer()
@@ -120,22 +124,31 @@ func _ready() -> void:
 	self.top_menu.get_save_button().pressed.connect(self.select_file.bind("Save state machine to file:", true, self.save))
 	self.top_menu.get_load_button().pressed.connect(self.select_file.bind("Load saved state machine from file:", false))
 	
-func _on_close(save_on_close: bool = false) -> void:
-	if save_on_close:
-		if not self.last_save_path:
+func _process(delta: float) -> void:
+	if self.last_save_path and not self.save_ask:
+		self.save_timer += delta
+		print(self.save_timer)
+		if self.save_timer >= 15.0:
+			self.save_ask = true
+			self.save_timer = 0.0
+
+func _on_close() -> void:
+	print("closing")
+	if not self.last_save_path:
+		if await self.ask_save_on_close():
 			self.select_file("Save state machine to file:", true, self.save)
-		else:
+			await self.saved
+	else:
+		if self.save_ask:
 			self.save(self.last_save_path)
-		await self.saved
+			await self.saved
+			self.save_ask = false
 	for layer in self.layers:
 		layer.close()
 		if layer.get_parent() == self:
 			self.remove_child(layer)
 	get_tree().quit()
 
-func _on_close_requested():
-		var answer = await self.ask_save_on_close()
-		self._on_close(answer)
 #endregion
 
 #region Layer Handling

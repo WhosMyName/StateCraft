@@ -92,7 +92,7 @@ func add_tile(tile: BaseTile, elem_size: Vector2):
 
 func add_elem(id) -> BaseTile:
 	# dynamically load element types (plaintext, markdown, video, audio, image)
-	var tile = null
+	var tile: BaseTile = null
 	if id == 0: # PlainText
 		tile = TextEditorTile.new()
 		self.add_tile(tile, Vector2(200, 235))
@@ -106,7 +106,8 @@ func add_elem(id) -> BaseTile:
 		tile = AudioPlayerTile.new()
 		self.add_tile(tile, Vector2(185, 120))
 	elif id == 4: # WHOOOP, OK GARMIN, FIDEO SPEICHERN!
-		self.add_tile(VideoPlayerTile.new(), Vector2(450, 450))
+		tile = VideoPlayerTile.new()
+		self.add_tile(tile, Vector2(450, 450))
 	else:
 		pass
 	self.size = Vector2(0, 0)

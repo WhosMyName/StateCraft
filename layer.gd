@@ -45,7 +45,9 @@ func close() -> void:
 	for node in self.graph_nodes_list:
 		if node:
 			node.close()
-			self.remove_child(node)
+			if node.get_parent() == self:
+				self.remove_child(node)
+	self.graph_nodes_list.clear()
 
 func disconnect_signals(menu: TopMenu) -> void:
 	# disconnecc the signals
