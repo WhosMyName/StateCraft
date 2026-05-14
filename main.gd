@@ -13,6 +13,7 @@ var last_save_path: String = ""
 var file_extension: String = ".csm"
 var save_timer: float = 0.0
 var save_ask: bool = false
+var save_time_limit: float = 30.0
 
 signal popup_resolved(choice: bool)
 signal saved
@@ -23,11 +24,11 @@ signal saved
 # .csm [compressed/crafted state machine] (.ccsm) | .cstate [c -> crafted] | .comst [compressed state] | .crast [crafted state]
 func save(path: String) -> void:
 	if not path:
-		print("Could not save file to path: ", path)
+		print("Could not find path: ", path)
 		return
 	if not path.ends_with(self.file_extension):
 		path += self.file_extension
-	if not self.last_save_path:
+	if not self.last_save_path or self.last_save_path != path:
 		self.last_save_path = path
 	var writer = ZIPPacker.new()
 	var err = writer.open(path)
@@ -68,7 +69,7 @@ func load_from_file(path):
 				self.select_file("Save state machine to file:", true, self.save)
 			else:
 				self.save(self.last_save_path)
-		await self.saved
+			await self.saved
 		for layer in self.layers:
 			layer.close()
 			self.remove_child(layer)
@@ -127,8 +128,7 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	if self.last_save_path and not self.save_ask:
 		self.save_timer += delta
-		print(self.save_timer)
-		if self.save_timer >= 15.0:
+		if self.save_timer >= self.save_time_limit:
 			self.save_ask = true
 			self.save_timer = 0.0
 

@@ -15,11 +15,14 @@ func _process(_delta: float) -> void:
 func save(data: Dictionary = {}) -> Dictionary:
 	data["id"] = self._id
 	data["uuid"] = self.nid
+	data["position"] = JSON.from_native(self.position_offset)
 	return data
 	
 func load_data(data: Dictionary) -> void:
 	self._id = data["id"]
 	self.nid = data["uuid"]
+	self.position = JSON.to_native(data["position"])
+	self.position_offset = self.position
 	
 func compare_nid(other_nid: String) -> bool:
 	return self.nid == other_nid

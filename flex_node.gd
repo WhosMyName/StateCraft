@@ -1,5 +1,4 @@
 class_name FlexNode extends BaseNode
-# TODO: make every element it's own class 4/5
 # TODO: handle resizing generally (both tiles and node)
 # TODO: use hseparator as resize bar
 # TODO: fix slots not removed when tile is removed

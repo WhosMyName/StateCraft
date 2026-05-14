@@ -84,10 +84,7 @@ func add_node() -> void:
 	self.add_child(node)
 	self.graph_nodes_list.append(node)
 	node.position_offset = self.scroll_offset + (self.size / 2.0) - (node.size / 2)
-	print("Scroll Offset", self.scroll_offset)
-	print("Viewport Size: ", self.get_viewport_rect().size)
-	print("Node Pos: ", node.position)
-	print("Node position_offset: ", node.position_offset)
+	# TODO: check if another node is at this position and find a new one
 	
 func find_node_by_id(id: int) -> BaseNode:
 	for node in self.graph_nodes_list:
@@ -103,6 +100,7 @@ func center_on_node(node) -> void:
 
 #region Load/Save Data
 func load_data(data: Dictionary) -> void:
+	self.zoom = 0
 	self._id = data["_id"]
 	self.is_active = data["is_active"]
 	self.setBGColor(JSON.to_native(data["bgColor"]))
@@ -111,6 +109,8 @@ func load_data(data: Dictionary) -> void:
 		self.add_child(node)
 		self.graph_nodes_list.append(node)
 		node.load_data(node_data)
+		print("Node Pos: ", node.position)
+		print("Node position_offset: ", node.position_offset)
 		if node.get_id() > self.node_number:
 			self.node_number = node.get_id()
 	for connection in data["connections"]:
@@ -120,23 +120,29 @@ func load_data(data: Dictionary) -> void:
 			connection["from_node"], connection["from_port"],
 			connection["to_node"], connection["to_port"]
 		)
+	self.zoom = data["zoom"]
+	self._check_zoom()
 
 func save() -> String:
+	self._old_zoom = self.zoom
 	if not self.graph_nodes_list: # return null if there're no nodes
 		return ""
 	var data = {
 		"_id": self._id,
 		"is_active": self.is_active,
 		"bgColor": JSON.from_native(self.bgColor),
+		"zoom": self.zoom,
 		"nodes": [],
 		"connections": [] 
 	}
+	self.zoom = 0
 	for node in self.graph_nodes_list:
 		data["nodes"].append(node.save())
 	for connection in self.connections:
 		connection["from_node"] = self.get_node(NodePath(connection["from_node"])).get_id()
 		connection["to_node"] = self.get_node(NodePath(connection["to_node"])).get_id()
 		data["connections"].append(connection)
+	self.zoom = self._old_zoom
 	return JSON.stringify(data, "\t")
 
 #endregion
