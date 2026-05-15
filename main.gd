@@ -18,6 +18,47 @@ var save_time_limit: float = 30.0
 signal popup_resolved(choice: bool)
 signal saved
 
+#region Init/Ready/Process/Close
+func _init() -> void:
+	pass
+
+func _ready() -> void:
+	get_tree().root.close_requested.connect(_on_close)
+	
+	self.top_menu = preload("res://top_menu.gd").new()
+	self.spawnLayer()
+	self.top_menu.get_add_layer_button().pressed.connect(self.spawnLayer)
+	self.top_menu.get_layer_up_button().pressed.connect(self.switch_layer_up)
+	self.top_menu.get_layer_down_button().pressed.connect(self.switch_layer_down)
+	self.top_menu.get_save_button().pressed.connect(self.select_file.bind("Save state machine to file:", true, self.save))
+	self.top_menu.get_load_button().pressed.connect(self.select_file.bind("Load saved state machine from file:", false))
+	
+func _process(delta: float) -> void:
+	if self.last_save_path and not self.save_ask:
+		self.save_timer += delta
+		if self.save_timer >= self.save_time_limit:
+			self.save_ask = true
+			self.save_timer = 0.0
+
+func _on_close() -> void:
+	print("closing")
+	if not self.last_save_path:
+		if await self.ask_save_on_close():
+			self.select_file("Save state machine to file:", true, self.save)
+			await self.saved
+	else:
+		if self.save_ask:
+			self.save(self.last_save_path)
+			await self.saved
+			self.save_ask = false
+	for layer in self.layers:
+		layer.close()
+		if layer.get_parent() == self:
+			self.remove_child(layer)
+	get_tree().quit()
+
+#endregion
+
 #region Load/Save Data
 # https://docs.godotengine.org/en/stable/classes/class_json.html
 # handle file path -> only filename
@@ -108,47 +149,6 @@ func ask_save_on_close() -> bool:
 	var choice: bool = await popup_resolved
 	popup.queue_free()
 	return choice
-#endregion
-
-#region Init/Ready/Process/Close
-func _init() -> void:
-	pass
-
-func _ready() -> void:
-	get_tree().root.close_requested.connect(_on_close)
-	
-	self.top_menu = preload("res://top_menu.gd").new()
-	self.spawnLayer()
-	self.top_menu.get_add_layer_button().pressed.connect(self.spawnLayer)
-	self.top_menu.get_layer_up_button().pressed.connect(self.switch_layer_up)
-	self.top_menu.get_layer_down_button().pressed.connect(self.switch_layer_down)
-	self.top_menu.get_save_button().pressed.connect(self.select_file.bind("Save state machine to file:", true, self.save))
-	self.top_menu.get_load_button().pressed.connect(self.select_file.bind("Load saved state machine from file:", false))
-	
-func _process(delta: float) -> void:
-	if self.last_save_path and not self.save_ask:
-		self.save_timer += delta
-		if self.save_timer >= self.save_time_limit:
-			self.save_ask = true
-			self.save_timer = 0.0
-
-func _on_close() -> void:
-	print("closing")
-	if not self.last_save_path:
-		if await self.ask_save_on_close():
-			self.select_file("Save state machine to file:", true, self.save)
-			await self.saved
-	else:
-		if self.save_ask:
-			self.save(self.last_save_path)
-			await self.saved
-			self.save_ask = false
-	for layer in self.layers:
-		layer.close()
-		if layer.get_parent() == self:
-			self.remove_child(layer)
-	get_tree().quit()
-
 #endregion
 
 #region Layer Handling

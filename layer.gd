@@ -38,6 +38,7 @@ func _ready() -> void:
 	
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(_delta: float) -> void:
+	#print("ScrollOffset", self.scroll_offset)
 	pass
 	
 func close() -> void:
@@ -109,8 +110,6 @@ func load_data(data: Dictionary) -> void:
 		self.add_child(node)
 		self.graph_nodes_list.append(node)
 		node.load_data(node_data)
-		print("Node Pos: ", node.position)
-		print("Node position_offset: ", node.position_offset)
 		if node.get_id() > self.node_number:
 			self.node_number = node.get_id()
 	for connection in data["connections"]:
@@ -122,6 +121,7 @@ func load_data(data: Dictionary) -> void:
 		)
 	self.zoom = data["zoom"]
 	self._check_zoom()
+	self.scroll_offset = JSON.to_native(data["scroll_offset"])
 
 func save() -> String:
 	self._old_zoom = self.zoom
@@ -132,6 +132,7 @@ func save() -> String:
 		"is_active": self.is_active,
 		"bgColor": JSON.from_native(self.bgColor),
 		"zoom": self.zoom,
+		"scroll_offset": JSON.from_native(self.scroll_offset),
 		"nodes": [],
 		"connections": [] 
 	}
