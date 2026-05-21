@@ -85,6 +85,11 @@ func _ready() -> void:
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(_delta: float) -> void:
 	pass
+	
+func close() -> void:
+	for child in self.get_children(true):
+		child.queue_free()
+	queue_free()
 #endregion
 
 #region Getter/Setter
@@ -127,7 +132,6 @@ func get_elements() -> Array[Node]:
 
 #region ZoomLabel
 func _update_zoom_label(zoom: float) -> void:
-	#print("Zoom Signal in TopMenu")
 	var zoom_text = "Zoom " + str(int(zoom * 100)) + "%"
 	self.zoom_label.set_text(zoom_text)
 #endregion

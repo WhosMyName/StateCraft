@@ -45,7 +45,8 @@ func _process(_delta: float) -> void:
 func close() -> void:
 	disconnect_signal(self.delete_node_button.pressed)
 	disconnect_signal(self.select_file_button.pressed)
-	self.get_parent().remove_child(self)
+	for child in self.get_children(true):
+		child.queue_free()
 	queue_free()
 #endregion
 

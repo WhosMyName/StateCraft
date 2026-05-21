@@ -52,9 +52,12 @@ func _on_close() -> void:
 			await self.saved
 			self.save_ask = false
 	for layer in self.layers:
-		layer.close()
-		if layer.get_parent() == self:
-			self.remove_child(layer)
+		if layer:
+			layer.close()
+	self.top_menu.close()
+	for child in self.get_children(true):
+		child.queue_free()
+	queue_free()
 	get_tree().quit()
 
 #endregion
@@ -112,8 +115,9 @@ func load_from_file(path):
 				self.save(self.last_save_path)
 			await self.saved
 		for layer in self.layers:
-			layer.close()
-			self.remove_child(layer)
+			if layer:
+				layer.close()
+				layer.hide()
 	self.layers.clear()
 		
 	self.last_save_path = path

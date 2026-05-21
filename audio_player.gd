@@ -90,7 +90,8 @@ func close() -> void:
 	disconnect_signal(self.volume_slider.drag_ended)
 	disconnect_signal(self.delete_node_button.pressed)
 	disconnect_signal(self.select_file_button.pressed)
-	self.get_parent().remove_child(self)
+	for child in self.get_children(true):
+		child.queue_free()
 	queue_free()
 #endregion
 
@@ -141,7 +142,6 @@ func load_from_path(path) -> void:
 
 #region Play/Pause/Seek
 func _play_pause_audio() -> void:
-	#print("Playpausing")
 	if self.player.stream:
 		if self.player.playing:
 			self.audio_pos = self.player.get_playback_position() + AudioServer.get_time_since_last_mix()

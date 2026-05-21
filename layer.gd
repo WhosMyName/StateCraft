@@ -46,9 +46,10 @@ func close() -> void:
 	for node in self.graph_nodes_list:
 		if node:
 			node.close()
-			if node.get_parent() == self:
-				self.remove_child(node)
 	self.graph_nodes_list.clear()
+	for child in self.get_children(true):
+		child.queue_free()
+	queue_free()
 
 func disconnect_signals(menu: TopMenu) -> void:
 	# disconnecc the signals
@@ -168,6 +169,8 @@ func setup_ui(top_menu:TopMenu, is_layer_switch:bool = false) -> void:
 	menu_box.visible = false
 	for child in menu_box.get_children():
 		menu_box.remove_child(child)
+		if child not in top_menu.get_elements(): # try not to delete the buttons we need
+			child.queue_free()
 	for node in top_menu.get_elements():
 		if node.get_parent():
 			node.reparent(menu_box)
@@ -189,7 +192,6 @@ func setup_ui(top_menu:TopMenu, is_layer_switch:bool = false) -> void:
 func _on_window_resized() -> void:
 	# TODO: delayed until pfffffffffffffffffffffffffft
 	print("HboxSize", self.get_menu_hbox().size)
-	#self.get_menu_hbox().minimum_size = self.get_menu_hbox().custom_minimum_size
 	print("HboxMinSize", self.get_menu_hbox().get_minimum_size())
 	print("HboxCMinSize", self.menu_hbox)
 #endregion
@@ -231,8 +233,6 @@ func _check_zoom() -> void:
 	if not is_equal_approx(self.zoom, self._old_zoom):
 		self._old_zoom = self.zoom
 		self.zoom_changed.emit(zoom)
-		#print(self.zoom)
-		#print(self.zoom_step)
 
 func _gui_input(event) -> void:
 	# Check if the event is a mouse button (scroll) or a touch gesture

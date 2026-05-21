@@ -86,7 +86,8 @@ func _process(_delta: float) -> void:
 func close() -> void:
 	disconnect_signal(self.delete_node_button.pressed)
 	disconnect_signal(self.select_file_button.pressed)
-	self.get_parent().remove_child(self)
+	for child in self.get_children(true):
+		child.queue_free()
 	queue_free()
 #endregion
 
@@ -137,7 +138,6 @@ func _seek(value_changed: bool) -> void:
 	if value_changed:
 		self.video_pos = int(self.seeker.get_as_ratio() * self.player.get_video_frame_count())
 		self.player.seek_frame(self.video_pos)
-		print("PlaybPos: ", self.player.get_current_playback_position_float())
 
 func _volume(value_changed: bool) -> void:
 	if value_changed:

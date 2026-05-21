@@ -39,6 +39,10 @@ func _process(_delta: float) -> void:
 	pass
 
 func close() -> void:
+	for tile in self.tiles:
+		tile.close()
+	for child in self.get_children(true):
+		child.queue_free()
 	queue_free()
 #endregion
 

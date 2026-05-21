@@ -50,7 +50,8 @@ func close() -> void:
 	disconnect_signal(self.edit_text_button.pressed)
 	disconnect_signal(self.delete_node_button.pressed)
 	disconnect_signal(self.editor.text_changed)
-	self.get_parent().remove_child(self)
+	for child in self.get_children(true):
+		child.queue_free()
 	queue_free()
 #endregion
 
@@ -79,6 +80,8 @@ func open_edit_window() -> void:
 func close_edit_text_window(window: Window) -> void:
 	self.label.text = self.editor.text
 	window.hide()
-	window.remove_child(editor)
+	self.editor.queue_free()
+	window.remove_child(self.editor)
+	window.queue_free()
 	self.remove_child(window)
 #endregion

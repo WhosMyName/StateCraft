@@ -15,6 +15,11 @@ func _ready() -> void:
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta: float) -> void:
 	pass
+	
+func close() -> void:
+	for child in self.get_children(true):
+		child.queue_free()
+	queue_free()
 #endregion
 
 #region Load/Save Data

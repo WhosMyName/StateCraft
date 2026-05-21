@@ -6,7 +6,6 @@ var nid: String = "" # cross-layer node id
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
 	self.nid = UUID.v4()
-	print("UUID: ", self.nid)
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(_delta: float) -> void:
