@@ -163,14 +163,14 @@ func setup_ui(top_menu:TopMenu, is_layer_switch:bool = false) -> void:
 	if not top_menu.get_add_node_button().pressed.is_connected(self.add_node):
 		top_menu.get_add_node_button().pressed.connect(self.add_node)
 	# menu_box "refresh"
-	var menu_box = self.get_menu_hbox()
+	var menu_box: HBoxContainer = self.get_menu_hbox()
 	if self.menu_box_size == Vector2.ZERO and menu_box.size != Vector2.ZERO and is_layer_switch:
 		self.menu_box_size = menu_box.size
-	menu_box.visible = false
 	for child in menu_box.get_children():
 		menu_box.remove_child(child)
-		if child not in top_menu.get_elements(): # try not to delete the buttons we need
-			child.queue_free()
+		#if child not in top_menu.get_elements() and not child.is_class("Label"): # try not to delete the buttons we need
+			#print("Freeing: ", child)
+			#child.queue_free()
 	for node in top_menu.get_elements():
 		if node.get_parent():
 			node.reparent(menu_box)
@@ -183,7 +183,6 @@ func setup_ui(top_menu:TopMenu, is_layer_switch:bool = false) -> void:
 		menu_box.reset_size()
 		menu_box.get_parent().custom_minimum_size = menu_box_size + Vector2(8, 4)
 		menu_box.get_parent().reset_size()
-	menu_box.visible = true
 	
 #endregion
 
